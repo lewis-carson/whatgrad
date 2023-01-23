@@ -2,6 +2,8 @@ use std::cell::RefCell;
 
 use crate::Value;
 
+type idx_partial = (usize, f64);
+
 #[derive(Clone, Copy)]
 pub struct Node {
     pub partials: [f64; 2],
@@ -27,9 +29,9 @@ impl Scope {
             parents: [len, len],
         });
         Value {
-            tape: self,
-            index: len,
-            v: value,
+            scope: self,
+            idx: len,
+            val: value,
         }
     }
 
@@ -37,36 +39,36 @@ impl Scope {
         &self,
         lhs_partial: f64,
         rhs_partial: f64,
-        lhs_index: usize,
-        rhs_index: usize,
+        lhs_idx: usize,
+        rhs_idx: usize,
         new_value: f64,
     ) -> Value {
         let len = self.nodes.borrow().len();
         self.nodes.borrow_mut().push(Node {
             partials: [lhs_partial, rhs_partial],
             // for a single (input) variable, we point the parents to itself
-            parents: [lhs_index, rhs_index],
+            parents: [lhs_idx, rhs_idx],
         });
         Value {
-            tape: self,
-            index: len,
-            v: new_value,
+            scope: self,
+            idx: len,
+            val: new_value,
         }
     }
 
-    /// Add a new node to the tape, where the node represents
+    /// Add a new node to the scope, where the node represents
     /// the result from a unary operation
-    pub fn unary_op(&self, partial: f64, index: usize, new_value: f64) -> Value {
+    pub fn unary_op(&self, partial: f64, idx: usize, new_value: f64) -> Value {
         let len = self.nodes.borrow().len();
         self.nodes.borrow_mut().push(Node {
             partials: [partial, 0.0],
-            // only the left index matters; the right index points to itself
-            parents: [index, len],
+            // only the left idx matters; the right idx points to itself
+            parents: [idx, len],
         });
         Value {
-            tape: self,
-            index: len,
-            v: new_value,
+            scope: self,
+            idx: len,
+            val: new_value,
         }
     }
 }
