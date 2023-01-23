@@ -1,4 +1,4 @@
-use aura::Scope;
+use whatgrad::Scope;
 
 fn main() {
     let scope = Scope::new();
@@ -6,7 +6,7 @@ fn main() {
     let y = scope.value(11.0);
 
     let z = x * y;
-    let grad = z.backprop();
+    let grad = z.backwards();
 
     println!("dz/dx = {}", grad.wrt(x));
     println!("dz/dy = {}", grad.wrt(y));

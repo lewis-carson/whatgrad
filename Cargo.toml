@@ -1,11 +1,15 @@
 [package]
-name = "aura"
+name = "whatgrad"
 version = "0.1.0"
 edition = "2021"
+license = "MIT"
+description = "Ergonomic reverse mode autodifferentiation"
+homepage = "https://github.com/lewis-carson/whatgrad"
+documentation = "https://github.com/lewis-carson/whatgrad"
+repository = "https://github.com/lewis-carson/whatgard"
+readme = "README.md"
+keywords = ["autodiff", "differentiation", "computation graph"]
 
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-daggy = "0.8.0"
-indextree = "4.5.0"
 num-traits = "0.2.15"

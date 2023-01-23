@@ -1,7 +1,7 @@
 use crate::{value::NumLike, Value};
 
 impl<T: NumLike> Value<'_, T> {
-    pub fn backprop(&self) -> Grad<T> {
+    pub fn backwards(&self) -> Grad<T> {
         let tape_len = self.scope.nodes.borrow().len();
         let mut grad = vec![T::zero(); tape_len];
         grad[self.idx] = T::one();
