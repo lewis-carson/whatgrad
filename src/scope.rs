@@ -2,12 +2,11 @@ use std::cell::RefCell;
 
 use crate::Value;
 
-type idx_partial = (usize, f64);
+type ParentsPartials = (usize, f64);
 
 #[derive(Clone, Copy)]
 pub struct Node {
-    pub partials: [f64; 2],
-    pub parents: [usize; 2],
+    pub parents_partials: [ParentsPartials; 2],
 }
 
 pub struct Scope {
@@ -24,9 +23,7 @@ impl Scope {
     pub fn value(&self, value: f64) -> Value {
         let len = self.nodes.borrow().len();
         self.nodes.borrow_mut().push(Node {
-            partials: [0.0, 0.0],
-            // for a single (input) variable, we point the parents to itself
-            parents: [len, len],
+            parents_partials: [(len, 0.0), (len, 0.0)],
         });
         Value {
             scope: self,
@@ -35,7 +32,7 @@ impl Scope {
         }
     }
 
-    pub fn binary_op(
+    pub fn op(
         &self,
         lhs_partial: f64,
         rhs_partial: f64,
@@ -45,9 +42,7 @@ impl Scope {
     ) -> Value {
         let len = self.nodes.borrow().len();
         self.nodes.borrow_mut().push(Node {
-            partials: [lhs_partial, rhs_partial],
-            // for a single (input) variable, we point the parents to itself
-            parents: [lhs_idx, rhs_idx],
+            parents_partials: [(lhs_idx, lhs_partial), (rhs_idx, rhs_partial)],
         });
         Value {
             scope: self,
@@ -56,14 +51,10 @@ impl Scope {
         }
     }
 
-    /// Add a new node to the scope, where the node represents
-    /// the result from a unary operation
-    pub fn unary_op(&self, partial: f64, idx: usize, new_value: f64) -> Value {
+    pub fn constant_op(&self, partial: f64, idx: usize, new_value: f64) -> Value {
         let len = self.nodes.borrow().len();
         self.nodes.borrow_mut().push(Node {
-            partials: [partial, 0.0],
-            // only the left idx matters; the right idx points to itself
-            parents: [idx, len],
+            parents_partials: [(idx, partial), (len, 0.0)],
         });
         Value {
             scope: self,

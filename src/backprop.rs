@@ -9,8 +9,11 @@ impl Value<'_> {
         for i in (0..tape_len).rev() {
             let node = self.scope.nodes.borrow()[i];
 
-            grad[node.parents[0]] += node.partials[0] * grad[i];
-            grad[node.parents[1]] += node.partials[1] * grad[i];
+            let lhs = node.parents_partials[0];
+            let rhs = node.parents_partials[1];
+
+            grad[lhs.0] += lhs.1 * grad[i];
+            grad[rhs.0] += rhs.1 * grad[i];
         }
 
         Grad { grad }
