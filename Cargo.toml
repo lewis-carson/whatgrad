@@ -8,7 +8,7 @@ homepage = "https://github.com/lewis-carson/whatgrad"
 documentation = "https://github.com/lewis-carson/whatgrad"
 repository = "https://github.com/lewis-carson/whatgard"
 readme = "README.md"
-keywords = ["autodiff", "differentiation", "computation graph"]
+keywords = ["autodiff", "differentiation"]
 
 
 [dependencies]

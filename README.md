@@ -1,6 +1,6 @@
 # whatgrad
 
-`whatgrad` is a crate for computing the gradient of a function with respect to its arguments. Full writeup [here](https://lewiscarson.com/).
+`whatgrad` is a crate for computing the gradient of a function with respect to its arguments. Full writeup [here](https://lewiscarson.com/posts/whatgrad).
 
 ## Usage
 
