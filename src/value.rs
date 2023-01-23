@@ -1,20 +1,28 @@
-use std::ops::{Add, Div, Mul, Neg, Sub};
+use std::{
+    fmt::Display,
+    ops::{Add, Div, Mul, Neg, Sub},
+};
+
+use num_traits::{NumAssignOps, NumOps, One, Zero};
 
 use crate::Scope;
 
+pub trait NumLike: Clone + Copy + NumOps + NumAssignOps + Zero + One + Neg + Display {}
+impl<T: Clone + Copy + NumOps + NumAssignOps + Zero + One + Neg + Display> NumLike for T {}
+
 #[derive(Clone, Copy)]
-pub struct Value<'t> {
-    pub scope: &'t Scope,
+pub struct Value<'t, T> {
+    pub scope: &'t Scope<T>,
     pub idx: usize,
-    pub val: f64,
+    pub val: T,
 }
 
-impl<'t> Add for Value<'t> {
+impl<'t, T: NumLike> Add for Value<'t, T> {
     type Output = Self;
 
     fn add(self, rhs: Self) -> Self::Output {
-        let lhs_partial = 1.0;
-        let rhs_partial = 1.0;
+        let lhs_partial = T::one();
+        let rhs_partial = T::one();
         let lhs_idx = self.idx;
         let rhs_idx = rhs.idx;
         let new_value = self.val + rhs.val;
@@ -24,7 +32,7 @@ impl<'t> Add for Value<'t> {
     }
 }
 
-impl<'t> Mul for Value<'t> {
+impl<'t, T: NumLike> Mul for Value<'t, T> {
     type Output = Self;
 
     fn mul(self, rhs: Self) -> Self::Output {
@@ -33,29 +41,29 @@ impl<'t> Mul for Value<'t> {
     }
 }
 
-impl<'t> Sub for Value<'t> {
+impl<'t, T: NumLike + Neg<Output = T>> Sub for Value<'t, T> {
     type Output = Self;
 
     fn sub(self, rhs: Self) -> Self::Output {
         self.scope
-            .op(1.0, -1.0, self.idx, rhs.idx, self.val - rhs.val)
+            .op(T::one(), -T::one(), self.idx, rhs.idx, self.val - rhs.val)
     }
 }
 
-impl<'t> Neg for Value<'t> {
+impl<'t, T: NumLike + Neg<Output = T>> Neg for Value<'t, T> {
     type Output = Self;
 
     fn neg(self) -> Self::Output {
-        self.scope.op(-1.0, 0.0, self.idx, 0, -self.val)
+        self.scope.op(-T::one(), T::zero(), self.idx, 0, -self.val)
     }
 }
 
-impl<'t> Div for Value<'t> {
+impl<'t, T: NumLike + Neg<Output = T>> Div for Value<'t, T> {
     type Output = Self;
 
     fn div(self, rhs: Self) -> Self::Output {
         self.scope.op(
-            1.0 / rhs.val,
+            T::one() / rhs.val,
             -self.val / (rhs.val * rhs.val),
             self.idx,
             rhs.idx,
@@ -64,10 +72,18 @@ impl<'t> Div for Value<'t> {
     }
 }
 
-impl<'t> Mul<Value<'t>> for f64 {
-    type Output = Value<'t>;
+impl<'t, T: NumLike> Mul<T> for Value<'t, T> {
+    type Output = Value<'t, T>;
 
-    fn mul(self, rhs: Value<'t>) -> Self::Output {
-        rhs.scope.constant_op(self, rhs.idx, self * rhs.val)
+    fn mul(self, rhs: T) -> Self::Output {
+        self.scope.constant_op(rhs, self.idx, rhs * self.val)
+    }
+}
+
+impl<'t, T: NumLike> Mul<Value<'t, T>> for (T,) {
+    type Output = Value<'t, T>;
+
+    fn mul(self, rhs: Value<'t, T>) -> Self::Output {
+        rhs.scope.constant_op(self.0, rhs.idx, rhs.val * self.0)
     }
 }
